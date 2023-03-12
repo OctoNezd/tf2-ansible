@@ -1,0 +1,63 @@
+---
+# tasks file for tf2server
+- name: Ensure sourcemod config folder exists
+  file:
+    path: "{{ tf2path }}/tf/addons/sourcemod/config"
+    state: directory
+- name: Generate admins_simple
+  template:
+    src: templates/admins_simple.ini.j2
+    dest: "{{ tf2path }}/tf/addons/sourcemod/configs/admins_simple.ini"
+- name: Allow anyone to read tf2ds configs
+  file:
+    path: "{{ tf2path }}/tf/cfg"
+    state: directory
+    mode: "0755"
+- name: Copy mapcycle.txt
+  copy:
+    src: files/mapcycle.txt
+    dest: "{{ tf2path }}/tf/cfg/mapcycle.txt"
+    mode: 0755
+- name: Check if RCON Config exists
+  stat:
+    path: "{{ tf2path }}/tf/cfg/rcon.cfg"
+  register: check_rcon
+- name: Generate rcon config
+  template:
+    src: templates/rcon.cfg.j2
+    dest: "{{ tf2path }}/tf/cfg/rcon.cfg"
+  when: not check_rcon.stat.exists
+- name: Generate MOTD
+  template:
+    src: templates/motd.txt.j2
+    dest: "{{ tf2path }}/tf/cfg/{{ item }}.txt"
+  loop: ["motd", "motd_text"]
+- name: Generate ctf configs
+  copy:
+    src: files/ctf_sanity.cfg
+    dest: "{{ tf2path }}/tf/cfg/{{ item }}.cfg"
+  with_lines: "cat {{ tf2path }}/tf/cfg/mapcycle.txt"
+  when: item.startswith("ctf")
+- name: Copy extra configs
+  copy:
+    src: "{{ item }}"
+    dest: "{{tf2path}}/tf/cfg/"
+  with_fileglob: "files/extra_configs/*.cfg"
+- name: Systemd operations
+  become_user: root
+  block:
+    - name: Generate tf2ds service
+      template:
+        src: templates/tf2ds.service.j2
+        dest: /lib/systemd/system/tf2ds@.service
+    - name: Reload systemd
+      systemd:
+        daemon_reload: true
+- name: Generate autoexec
+  template:
+    src: templates/server_generic.cfg.j2
+    dest: "{{ tf2path }}/tf/cfg/server.cfg"
+- include_tasks: "server_specific.yml"
+  loop: "{{ ports }}"
+  loop_control:
+    loop_var: port

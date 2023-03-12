@@ -1,0 +1,18 @@
+all:
+  vars:
+    ansible_shell_allow_world_readable_temp: true
+    network_name: octonezd.me
+    admins:
+      - STEAM_0:1:80870195
+    login_tokens: ["aaa", "bbb"]
+  children:
+    tf2servers:
+      hosts:
+        localhost:
+          ports: [27015, 27016]
+          location: TESTING
+          cl_region: 3
+          external_ip: 127.0.0.1
+    hlstats:
+      hosts:
+        localhost:

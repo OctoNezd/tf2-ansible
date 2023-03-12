@@ -1,0 +1,15 @@
+- hosts: tf2servers
+  roles:
+    - role: base
+      become: true
+    - role: steamcmd
+      become: true
+    - role: tf2ds
+      become: true
+      become_user: "{{ tf2user }}"
+    - role: smod
+      become: true
+      become_user: "{{ tf2user }}"
+    - role: tf2configs
+      become: true
+      become_user: "{{ tf2user }}"

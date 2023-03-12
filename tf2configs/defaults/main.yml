@@ -1,0 +1,2 @@
+rcon_password: "{{ lookup('ansible.builtin.password', '/dev/null', seed=inventory_hostname) }}"
+token_idx: 0

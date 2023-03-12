@@ -1,0 +1,35 @@
+---
+- block:
+    - name: Enable multiverse
+      apt_repository:
+        repo: "{{ item }}"
+        update_cache: false # We will do ourselfs afterwards
+      register: multiverse_installed
+      with_items:
+        - "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
+        - "deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }} multiverse"
+        - "deb http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
+        - "deb-src http://archive.ubuntu.com/ubuntu {{ ansible_distribution_release }}-updates multiverse"
+    - name: Add i386 arch
+      command: dpkg --add-architecture i386
+    - name: Update repository metadata
+      apt:
+        update_cache: true
+      when: multiverse_installed.changed
+  when: ansible_distribution == 'Ubuntu'
+- name: Agree to Steam EULA
+  block:
+    - debconf:
+        name: steam
+        question: steam/question
+        value: "I AGREE"
+        vtype: select
+    - debconf:
+        name: steam
+        question: steam/license
+        value: ""
+        vtype: note
+- name: Install steamcmd
+  package:
+    name: steamcmd
+    state: present

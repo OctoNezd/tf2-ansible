@@ -1,0 +1,17 @@
+---
+# tasks file for tf2server
+- name: Remove old Metamod/Sourcemod
+  file:
+    path: "{{ tf2path }}/tf/addons"
+    state: absent
+- name: Install Metamod
+  unarchive:
+    remote_src: true
+    src: https://mms.alliedmods.net/mmsdrop/1.11/mmsource-{{ metamod_version }}-linux.tar.gz
+    dest: "{{ tf2path }}/tf/"
+- name: Install Sourcemod
+  unarchive:
+    remote_src: true
+    src: https://sm.alliedmods.net/smdrop/1.11/sourcemod-{{ sourcemod_version }}-linux.tar.gz
+    dest: "{{ tf2path }}/tf/"
+- include_tasks: plugins.yml

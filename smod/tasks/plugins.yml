@@ -1,0 +1,8 @@
+- name: Plugin install
+  copy:
+    src: "{{ item }}"
+    dest: "{{ tf2path }}/tf/addons/sourcemod/"
+  with_items:
+    - "files/halloweencosmeticenabler/"
+    - "files/ictf/"
+    - "files/GiveBotsStuff-main/"

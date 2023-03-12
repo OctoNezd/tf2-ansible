@@ -1,0 +1,6 @@
+// Hostname for server.
+hostname [EN][{{ network_name}}] {{ location }}#{{ server_id }} Casual-like?
+
+{% if login_tokens[total_server_count|int] is defined %}
+sv_setsteamaccount {{ login_tokens[total_server_count|int] }}
+{% endif %}

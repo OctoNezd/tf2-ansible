@@ -1,0 +1,34 @@
+- set_fact:
+    server_ids: "{{ server_ids|default({}) | combine({location: 0}) }}"
+  when: "(server_ids|default({}))[location] is not defined"
+- set_fact:
+    server_ids: "{{ server_ids | combine({location: server_ids[location]+1}) }}"
+    total_server_count: "{{ total_server_count|default(-1)|int + 1 }}"
+- set_fact:
+    server_id: "{{ server_ids[location] }}"
+- debug:
+    msg: "total servers: {{ total_server_count }}, this region server id: {{ server_id }}, sids: {{ server_ids }}, token for this server is {{ login_tokens[total_server_count|int] }}"
+- name: Generate autoexec
+  template:
+    src: templates/server.cfg.j2
+    dest: "{{ tf2path }}/tf/cfg/server-{{ port }}.cfg"
+- name: Copy sourcemod
+  copy:
+    remote_src: true
+    src: "{{ tf2path }}/tf/addons/sourcemod/"
+    dest: "{{ tf2path }}/tf/addons/sourcemod{{ port }}/"
+- name: Open tf2 ports
+  become_user: root
+  ufw:
+    rule: allow
+    port: "{{ port }}"
+    proto: "{{ item }}"
+  with_items:
+    - "tcp"
+    - "udp"
+- name: Enable tf2ds service
+  become_user: root
+  systemd:
+    name: "tf2ds@{{ port }}"
+    enabled: true
+    state: restarted

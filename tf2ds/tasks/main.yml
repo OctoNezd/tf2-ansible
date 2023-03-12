@@ -1,0 +1,37 @@
+---
+# tasks file for tf2ds
+- name: Update steamcmd
+  command: /usr/games/steamcmd +quit
+- name: Download and install tf2ds
+  command: /usr/games/steamcmd +force_install_dir {{ tf2path }} +login anonymous +app_update 232250 +quit
+- name: Create symlink for steamclient and other shit
+  ansible.builtin.file:
+    src: "{{ tf2path }}/bin"
+    dest: "{{ tf2path }}/.steam/sdk32"
+    state: link
+- name: Open tf2 ports (TCP)
+  become_user: root
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: tcp
+  with_items:
+    - "27036"
+- name: Open tf2 ports (UDP)
+  become_user: root
+  ufw:
+    rule: allow
+    port: "{{ item }}"
+    proto: udp
+  with_items:
+    - "27020"
+    - 27031:27036
+- name: Install tf2 requirements
+  become_user: root
+  package:
+    name:
+      - libtinfo5:i386
+      - libncurses5:i386
+      - libcurl3-gnutls:i386
+      - gcc-multilib
+    state: present
